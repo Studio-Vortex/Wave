@@ -1,4 +1,4 @@
-workspace "PROJECT_NAME"
+workspace "Wave"
     architecture "x64"
     configurations { "Debug", "Release", "Dist" }
     startproject "App"
@@ -10,7 +10,7 @@ workspace "PROJECT_NAME"
 OutputDir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
 group "Core"
-    include "Core/build-core.lua"
+    include "Wave/build-wave.lua"
 group ""
 
 include "App/build-app.lua"

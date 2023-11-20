@@ -1,8 +1,8 @@
-#include "Core.h"
+#include "Wave.h"
 
 #include <iostream>
 
-namespace Core {
+namespace Wave {
 
 	void Test()
 	{

@@ -1,6 +1,6 @@
-#include "Core/Core.h"
+#include "Wave/Wave.h"
 
 int main(int argc, char** argv)
 {
-	Core::Test();
+	Wave::Test();
 }

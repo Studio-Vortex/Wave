@@ -1,4 +1,4 @@
-project "Core"
+project "Wave"
    kind "StaticLib"
    language "C++"
    cppdialect "C++20"

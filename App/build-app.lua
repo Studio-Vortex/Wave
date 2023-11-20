@@ -11,13 +11,13 @@ project "App"
    {
       "src",
 
-	  -- Include Core
-	  "../Core/src"
+	  -- Include Wave
+	  "../Wave/src"
    }
 
    links
    {
-      "Core"
+      "Wave"
    }
 
    targetdir ("../bin/" .. OutputDir .. "/%{prj.name}")
