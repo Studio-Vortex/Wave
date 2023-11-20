@@ -5,11 +5,18 @@ project "Wave"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
-   files { "src/**.h", "src/**.cpp" }
+   files
+   {
+      "src/**.h",
+      "src/**.cpp",
+      
+      "%{prj.name}/vendor/miniaudio/miniaudio.h",
+   }
 
    includedirs
    {
-      "src"
+      "src",
+      "vendor",
    }
 
    targetdir ("../bin/" .. OutputDir .. "/%{prj.name}")
