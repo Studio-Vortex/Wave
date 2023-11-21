@@ -7,7 +7,27 @@ namespace Wave {
 
 	struct SoundData
 	{
+		float Volume = 1.0f;
+		float Pitch = 1.0f;
+		float DopplerFactor = 0.0f;
+		float Falloff = 1.0f;
+
+		float MinGain = 1.0f;
+		float MaxGain = 1.0f;
+		float MinDistance = 1.0f;
+		float MaxDistance = 1.0f;
+
+		Vec3 Position = Vec3(0.0f);
+		Vec3 Direction = Vec3(0.0f);
+		Vec3 Velocity = Vec3(0.0f);
+
+		AudioCone Cone;
+		AttenuationModel Model = AttenuationModel::Inverse;
+
+		bool IsPlaying = false;
 		bool IsPaused = false;
+		bool IsLooping = false;
+		bool Spacialized = true;
 	};
 
 	class Sound

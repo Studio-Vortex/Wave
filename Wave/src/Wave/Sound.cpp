@@ -25,6 +25,7 @@ namespace Wave {
 		}
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
+		Context::GetSoundInternalData(m_SoundID)->IsPlaying = true;
 		
 		return true;
 	}
@@ -43,18 +44,25 @@ namespace Wave {
 			return false;
 		}
 
+		Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
+		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
+
 		return true;
 	}
 
 	bool Sound::Pause() const
 	{
+		bool result = true;
+
 		if (!IsPaused())
 		{
-			Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
-			return Stop();
+			result = Stop();
 		}
+
+		Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
+		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
 		
-		return true;
+		return result;
 	}
 
 	bool Sound::Stop() const
@@ -70,6 +78,9 @@ namespace Wave {
 			Context::SetErrorMsg(err);
 			return false;
 		}
+
+		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
+		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
 		
 		return true;
 	}
@@ -79,7 +90,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_volume(sound);
+		return Context::GetSoundInternalData(m_SoundID)->Volume;
 	}
 
 	void Sound::SetVolume(float volume) const
@@ -88,6 +99,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_volume(sound, volume);
+		Context::GetSoundInternalData(m_SoundID)->Volume = volume;
 	}
 
 	float Sound::GetPitch() const
@@ -95,7 +107,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_pitch(sound);
+		return Context::GetSoundInternalData(m_SoundID)->Pitch;
 	}
 
 	void Sound::SetPitch(float pitch) const
@@ -104,6 +116,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_pitch(sound, pitch);
+		Context::GetSoundInternalData(m_SoundID)->Pitch = pitch;
 	}
 
 	float Sound::GetDopplerFactor() const
@@ -111,7 +124,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_doppler_factor(sound);
+		return Context::GetSoundInternalData(m_SoundID)->DopplerFactor;
 	}
 
 	void Sound::SetDopplerFactor(float dopplerFactor) const
@@ -120,6 +133,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_doppler_factor(sound, dopplerFactor);
+		Context::GetSoundInternalData(m_SoundID)->DopplerFactor = dopplerFactor;
 	}
 
 	Vec3 Sound::GetPosition() const
@@ -127,9 +141,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		ma_vec3f position = ma_sound_get_position(sound);
-
-		return Vec3(position.x, position.y, position.z);
+		return Context::GetSoundInternalData(m_SoundID)->Position;
 	}
 
 	void Sound::SetPosition(const Vec3& position) const
@@ -138,6 +150,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_position(sound, position.X, position.Y, position.Z);
+		Context::GetSoundInternalData(m_SoundID)->Position = position;
 	}
 
 	Vec3 Sound::GetDirection() const
@@ -145,9 +158,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		ma_vec3f direction = ma_sound_get_direction(sound);
-
-		return Vec3(direction.x, direction.y, direction.z);
+		return Context::GetSoundInternalData(m_SoundID)->Direction;
 	}
 
 	void Sound::SetDirection(const Vec3& direction) const
@@ -156,6 +167,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_direction(sound, direction.X, direction.Y, direction.Z);
+		Context::GetSoundInternalData(m_SoundID)->Direction = direction;
 	}
 
 	Vec3 Sound::GetVelocity() const
@@ -163,9 +175,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		ma_vec3f velocity = ma_sound_get_velocity(sound);
-
-		return Vec3(velocity.x, velocity.y, velocity.z);
+		return Context::GetSoundInternalData(m_SoundID)->Velocity;
 	}
 
 	void Sound::SetVelocity(const Vec3& velocity) const
@@ -174,6 +184,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_velocity(sound, velocity.X, velocity.Y, velocity.Z);
+		Context::GetSoundInternalData(m_SoundID)->Velocity = velocity;
 	}
 
 	AudioCone Sound::GetAudioCone() const
@@ -181,14 +192,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		AudioCone cone;
-
-		ma_sound_get_cone(sound, &cone.InnerAngle, &cone.OuterAngle, &cone.OuterGain);
-
-		cone.InnerAngle = Utils::RadiansToDegrees(cone.InnerAngle);
-		cone.OuterAngle = Utils::RadiansToDegrees(cone.OuterAngle);
-
-		return cone;
+		return Context::GetSoundInternalData(m_SoundID)->Cone;
 	}
 
 	void Sound::SetAudioCone(const AudioCone& cone) const
@@ -197,6 +201,10 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_cone(sound, Utils::DegreesToRadians(cone.InnerAngle), Utils::DegreesToRadians(cone.OuterAngle), cone.OuterGain);
+		AudioCone& cone_ = Context::GetSoundInternalData(m_SoundID)->Cone;
+		cone_.InnerAngle = Utils::DegreesToRadians(cone.InnerAngle);
+		cone_.OuterAngle = Utils::DegreesToRadians(cone.OuterAngle);
+		cone_.OuterGain = cone.OuterGain;
 	}
 
 	float Sound::GetMinGain() const
@@ -204,7 +212,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_min_gain(sound);
+		return Context::GetSoundInternalData(m_SoundID)->MinGain;
 	}
 
 	void Sound::SetMinGain(float minGain) const
@@ -213,6 +221,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_min_gain(sound, minGain);
+		Context::GetSoundInternalData(m_SoundID)->MinGain = minGain;
 	}
 
 	float Sound::GetMaxGain() const
@@ -220,7 +229,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_max_gain(sound);
+		return Context::GetSoundInternalData(m_SoundID)->MaxGain;
 	}
 
 	void Sound::SetMaxGain(float maxGain) const
@@ -229,6 +238,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_max_gain(sound, maxGain);
+		Context::GetSoundInternalData(m_SoundID)->MaxGain = maxGain;
 	}
 
 	float Sound::GetFalloff() const
@@ -236,7 +246,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_rolloff(sound);
+		return Context::GetSoundInternalData(m_SoundID)->Falloff;
 	}
 
 	void Sound::SetFalloff(float falloff) const
@@ -245,6 +255,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_rolloff(sound, falloff);
+		Context::GetSoundInternalData(m_SoundID)->Falloff = falloff;
 	}
 
 	float Sound::GetMinDistance() const
@@ -252,7 +263,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_min_distance(sound);
+		return Context::GetSoundInternalData(m_SoundID)->MinDistance;
 	}
 
 	void Sound::SetMinDistance(float minDistance) const
@@ -261,6 +272,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_min_distance(sound, minDistance);
+		Context::GetSoundInternalData(m_SoundID)->MinDistance = minDistance;
 	}
 
 	float Sound::GetMaxDistance() const
@@ -268,7 +280,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return ma_sound_get_max_distance(sound);
+		return Context::GetSoundInternalData(m_SoundID)->MaxDistance;
 	}
 
 	void Sound::SetMaxDistance(float maxDistance) const
@@ -277,6 +289,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_max_distance(sound, maxDistance);
+		Context::GetSoundInternalData(m_SoundID)->MaxDistance = maxDistance;
 	}
 
 	AttenuationModel Sound::GetAttenuationModel() const
@@ -284,7 +297,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return (AttenuationModel)ma_sound_get_attenuation_model(sound);
+		return Context::GetSoundInternalData(m_SoundID)->Model;
 	}
 
 	void Sound::SetAttenuationModel(AttenuationModel model) const
@@ -293,6 +306,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_attenuation_model(sound, (ma_attenuation_model)model);
+		Context::GetSoundInternalData(m_SoundID)->Model = model;
 	}
 
 	float Sound::GetSoundCursor() const
@@ -336,7 +350,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return (bool)ma_sound_is_playing(sound);
+		return Context::GetSoundInternalData(m_SoundID)->IsPlaying;
 	}
 
 	bool Sound::IsPaused() const
@@ -352,7 +366,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return (bool)ma_sound_is_looping(sound);
+		return Context::GetSoundInternalData(m_SoundID)->IsLooping;
 	}
 
 	void Sound::SetLooping(bool loop) const
@@ -361,6 +375,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_looping(sound, (ma_bool32)loop);
+		Context::GetSoundInternalData(m_SoundID)->IsLooping = loop;
 	}
 
 	bool Sound::IsSpacialized() const
@@ -368,7 +383,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return (bool)ma_sound_is_spatialization_enabled(sound);
+		return Context::GetSoundInternalData(m_SoundID)->Spacialized;
 	}
 
 	void Sound::SetSpacialized(bool spacialized) const
@@ -377,6 +392,7 @@ namespace Wave {
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
 		ma_sound_set_spatialization_enabled(sound, spacialized);
+		Context::GetSoundInternalData(m_SoundID)->Spacialized = spacialized;
 	}
 
 }

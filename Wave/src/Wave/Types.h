@@ -17,6 +17,9 @@ namespace Wave {
 
 		Vec3(float x, float y, float z)
 			: X(x), Y(y), Z(z) { }
+
+		Vec3(float value)
+			: X(value), Y(value), Z(value) { }
 	};
 
 	struct AudioCone

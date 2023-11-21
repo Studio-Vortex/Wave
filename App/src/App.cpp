@@ -26,7 +26,7 @@ void LowLevelDemo(std::shared_ptr<Wave::Context> ctx, const std::filesystem::pat
 
 	// Some various functions that change the output of the sound
 	sound.SetAttenuationModel(Wave::AttenuationModel::None);
-	sound.SetPosition(Wave::Vec3(0.0f, 0.0f, 0.0f));
+	sound.SetPosition(Wave::Vec3(0.0f));
 	sound.SetSpacialized(false);
 	sound.SetLooping(true);
 	sound.SetPitch(1.17f);
@@ -68,6 +68,17 @@ void HighLevelDemo(std::shared_ptr<Wave::Context> ctx, const std::filesystem::pa
 	device.Init(ctx, path); // Initialize the device
 
 	device.Play(); // Play the sound
+
+	// We can get the sound from the device
+	Wave::Sound sound = device.GetSound();
+
+	// Some various functions that change the output of the sound
+	sound.SetAttenuationModel(Wave::AttenuationModel::None);
+	sound.SetPosition(Wave::Vec3(0.0f));
+	sound.SetSpacialized(false);
+	sound.SetLooping(true);
+	sound.SetPitch(1.17f);
+	sound.SetVolume(1.1f);
 
 	getchar();
 
