@@ -135,6 +135,6 @@ int main(int argc, char** argv) {
 	//LowLevelDemo(ctx, path);
 	HighLevelDemo(ctx, path);
 
-	DestroyContext(ctx);
+	Wave::DestroyContext(ctx);
 	return 0;
 }
