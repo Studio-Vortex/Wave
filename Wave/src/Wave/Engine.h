@@ -15,16 +15,15 @@ namespace Wave {
 		inline Engine(ID id) : m_EngineID(id) { }
 		~Engine() = default;
 
-		bool Init(const EngineSettings& settings);
-		bool Shutdown();
-
-		void Start();
-		void Stop();
+		bool Start();
+		bool Stop();
 
 		inline ID GetID() const { return m_EngineID; }
 
+		inline operator ID() const { return m_EngineID; }
+
 	private:
-		ID m_EngineID = ID(0);
+		ID m_EngineID = ID::Invalid;
 	};
 
 }

@@ -39,26 +39,45 @@ int main(int argc, char** argv) {
 		std::cout << "Is Default: " << std::boolalpha << deviceInfo.IsDefault << '\n' << '\n';
 	}
 
-	Wave::Engine engine = ctx->CreateEngine();
+	Wave::EngineSettings engineSettings;
+	Wave::Engine engine = ctx->CreateEngine(engineSettings);
 	if (engine.GetID() == Wave::ID::Invalid) {
 		std::cout << ctx->GetLastErrorMsg() << '\n';
 	}
 
-	std::filesystem::path path = "Resources/Audio/music-file.mp3";
+	std::filesystem::path path = "Resources/Audio/everychanceiget.mp3";
 	if (!std::filesystem::exists(path)) {
 		std::cout << "Path doesn't exist: " << path << "\n";
 	}
 
-	Wave::Sound sound = ctx->CreateSoundFromFile(engine.GetID(), path);
+	Wave::SoundSettings soundSettings;
+	Wave::Sound sound = ctx->CreateSoundFromFile(soundSettings, engine.GetID(), path);
 	if (sound.GetID() == Wave::ID::Invalid) {
 		std::cout << ctx->GetLastErrorMsg() << '\n';
 	}
 
-	engine.Start();
-	sound.Play();
+	if (!engine.Start()){
+		std::cout << ctx->GetLastErrorMsg() << '\n';
+	}
+	if (!sound.Play()) {
+		std::cout << ctx->GetLastErrorMsg() << '\n';
+	}
 
 	getchar();
 
+	if (!sound.Stop()) {
+		std::cout << ctx->GetLastErrorMsg() << '\n';
+	}
+	if (!engine.Stop()) {
+		std::cout << ctx->GetLastErrorMsg() << '\n';
+	}
+
+	if (!ctx->DestroyEngine(engine)) {
+		std::cout << ctx->GetLastErrorMsg() << '\n';
+	}
+	if (!ctx->DestroySound(sound)) {
+		std::cout << ctx->GetLastErrorMsg() << '\n';
+	}
 	if (!ctx->Shutdown()) {
 		std::cout << ctx->GetLastErrorMsg() << '\n';
 	}

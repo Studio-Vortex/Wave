@@ -15,16 +15,15 @@ namespace Wave {
 		inline Sound(ID id) : m_SoundID(id) { }
 		~Sound() = default;
 
-		bool Init(const SoundSettings& settings);
-		bool Shutdown();
-
-		void Play();
-		void Stop();
+		bool Play();
+		bool Stop();
 
 		inline ID GetID() const { return m_SoundID; }
 
+		inline operator ID() const { return m_SoundID; }
+
 	private:
-		ID m_SoundID = ID(0);
+		ID m_SoundID = ID::Invalid;
 	};
 
 }

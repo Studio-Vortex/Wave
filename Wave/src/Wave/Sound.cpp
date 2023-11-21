@@ -8,18 +8,8 @@
 #include <format>
 
 namespace Wave {
-	
-	bool Sound::Init(const SoundSettings& settings)
-	{
-		return false;
-	}
-	
-	bool Sound::Shutdown()
-	{
-		return false;
-	}
 
-	void Sound::Play()
+	bool Sound::Play()
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		ma_result res = ma_sound_start(sound);
@@ -27,11 +17,22 @@ namespace Wave {
 		{
 			std::string err = std::format("Failed to start sound with ID: '{}'", uint64_t(m_SoundID));
 			Context::SetErrorMsg(err);
+			return false;
 		}
+		return true;
 	}
 
-	void Sound::Stop()
+	bool Sound::Stop()
 	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		ma_result res = ma_sound_stop(sound);
+		if (res != MA_SUCCESS)
+		{
+			std::string err = std::format("Failed to stop sound with ID: '{}'", uint64_t(m_SoundID));
+			Context::SetErrorMsg(err);
+			return false;
+		}
+		return true;
 	}
 
 }
