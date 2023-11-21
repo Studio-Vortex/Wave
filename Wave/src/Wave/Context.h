@@ -55,11 +55,11 @@ namespace Wave {
 		ContextResult Init(const ContextSettings& settings);
 		bool Shutdown();
 
-		Sound CreateSoundFromFile(const SoundSettings& settings, ID engineID, const std::filesystem::path& path);
-		Sound CreateSoundFromDataSource(const SoundSettings& settings, ID engineID, const uint8_t* src, size_t size);
+		Sound CreateSoundFromFile(ID engineID, const std::filesystem::path& path);
+		Sound CreateSoundFromDataSource(ID engineID, const uint8_t* src, size_t size);
 		bool DestroySound(ID id);
 
-		Engine CreateEngine(const EngineSettings& settings);
+		Engine CreateEngine();
 		bool DestroyEngine(ID id);
 
 		inline const std::string& GetLastErrorMsg() const { return m_LastErrorMsg; }
@@ -68,7 +68,9 @@ namespace Wave {
 		static void SetErrorMsg(const std::string& msg);
 
 		static void* GetSoundInternal(ID id);
+		static SoundData* GetSoundInternalData(ID id);
 		static void* GetEngineInternal(ID id);
+		static EngineData* GetEngineInternalData(ID id);
 
 	private:
 		std::string m_LastErrorMsg = "";

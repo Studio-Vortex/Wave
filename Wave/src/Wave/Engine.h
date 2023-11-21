@@ -4,9 +4,9 @@
 
 namespace Wave {
 
-	struct EngineSettings
+	struct EngineData
 	{
-
+		bool IsRunning = false;
 	};
 
 	class Engine
@@ -15,8 +15,10 @@ namespace Wave {
 		inline Engine(ID id) : m_EngineID(id) { }
 		~Engine() = default;
 
-		bool Start();
-		bool Stop();
+		bool Start() const;
+		bool Stop() const;
+
+		bool IsRunning() const;
 
 		inline ID GetID() const { return m_EngineID; }
 

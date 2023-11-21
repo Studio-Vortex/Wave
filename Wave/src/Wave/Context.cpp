@@ -18,19 +18,18 @@ namespace Wave {
 		ma_uint32 CaptureDeviceCount;
 		ma_device_info* PlaybackDeviceInfos;
 		ma_device_info* CaptureDeviceInfos;
-		ContextSettings Settings;
 	};
 
 	struct SoundInternalData
 	{
 		ma_sound Sound;
-		SoundSettings Settings;
+		SoundData Data;
 	};
 
 	struct EngineInternalData
 	{
 		ma_engine Engine;
-		EngineSettings Settings;
+		EngineData Data;
 	};
 
 	struct ContextPair
@@ -70,13 +69,13 @@ namespace Wave {
 		s_Data = new InternalData();
 
 		s_Data->CurrentContext.pCtx = this;
-		s_Data->CurrentContext.Data.Settings = settings;
 
 		// Initialize Miniaudio
 		ma_context_config config = ma_context_config_init();
 		config.pUserData = settings.pUserData;
 
 		ma_result res = ma_context_init(nullptr, 0, &config, &s_Data->CurrentContext.Data.Context);
+		
 		if (res != MA_SUCCESS)
 		{
 			m_LastErrorMsg = "Failed to initialize miniaudio!";
@@ -90,6 +89,7 @@ namespace Wave {
 			&s_Data->CurrentContext.Data.CaptureDeviceInfos,
 			&s_Data->CurrentContext.Data.CaptureDeviceCount
 		);
+		
 		if (res != MA_SUCCESS)
 		{
 			m_LastErrorMsg = "Failed to enumerate hardware devices!";
@@ -104,6 +104,7 @@ namespace Wave {
 			callback.onLog = settings.LogCallback;
 
 			res = ma_log_register_callback(log, callback);
+			
 			if (res != MA_SUCCESS)
 			{
 				m_LastErrorMsg = "Failed to register log callback";
@@ -143,6 +144,7 @@ namespace Wave {
 		// Shutdown Miniaudio
 		ma_context* context = &s_Data->CurrentContext.Data.Context;
 		ma_result res = ma_context_uninit(context);
+		
 		if (res != MA_SUCCESS)
 		{
 			m_LastErrorMsg = "Failed to shutdown miniaudio!";
@@ -155,7 +157,7 @@ namespace Wave {
 		return true;
 	}
 
-	Sound Context::CreateSoundFromFile(const SoundSettings& settings, ID engineID, const std::filesystem::path& path)
+	Sound Context::CreateSoundFromFile(ID engineID, const std::filesystem::path& path)
 	{
 		ID soundID = ID(s_Data->ActiveSounds.size());
 		Sound sound = Sound(soundID);
@@ -163,7 +165,6 @@ namespace Wave {
 		WAVE_ASSERT(!s_Data->ActiveSounds.contains(soundID), "Sound with ID: '%zu' already exists!", uint64_t(soundID));
 		SoundPair& pair = s_Data->ActiveSounds[soundID];
 		pair.pSound = &sound;
-		pair.Data.Settings = settings;
 		
 		ma_sound_config config = ma_sound_config_init();
 		std::string filepath = path.string();
@@ -171,6 +172,7 @@ namespace Wave {
 
 		ma_engine* engine = &s_Data->ActiveEngines[engineID].Data.Engine;
 		ma_result res = ma_sound_init_ex(engine, &config, &pair.Data.Sound);
+		
 		if (res != MA_SUCCESS)
 		{
 			m_LastErrorMsg = std::format("Failed to create sound from: '{}'", filepath);
@@ -180,7 +182,7 @@ namespace Wave {
 		return sound;
 	}
 
-	Sound Context::CreateSoundFromDataSource(const SoundSettings& settings, ID engineID, const uint8_t* src, size_t size)
+	Sound Context::CreateSoundFromDataSource(ID engineID, const uint8_t* src, size_t size)
 	{
 		WAVE_ASSERT(false, "Not implemented yet!%s", "");
 		return Sound(ID::Invalid);
@@ -189,16 +191,21 @@ namespace Wave {
 	bool Context::DestroySound(ID id)
 	{
 		ma_sound* sound = (ma_sound*)GetSoundInternal(id);
+		
 		if (sound == nullptr)
 		{
 			m_LastErrorMsg = std::format("Failed to destroy sound with ID: '{}'", uint64_t(id));
 			return false;
 		}
+		
 		ma_sound_uninit(sound);
+
+		s_Data->ActiveSounds.erase(id);
+
 		return true;
 	}
 
-	Engine Context::CreateEngine(const EngineSettings& settings)
+	Engine Context::CreateEngine()
 	{
 		ID engineID = ID(s_Data->ActiveEngines.size());
 		Engine engine = Engine(engineID);
@@ -206,12 +213,12 @@ namespace Wave {
 		WAVE_ASSERT(!s_Data->ActiveEngines.contains(engineID), "Engine with ID: '%zu' already exists!", uint64_t(engineID));
 		EnginePair& pair = s_Data->ActiveEngines[engineID];
 		pair.pEngine = &engine;
-		pair.Data.Settings = settings;
 
 		ma_engine_config config = ma_engine_config_init();
 		config.noAutoStart = true;
 		
 		ma_result res = ma_engine_init(&config, &pair.Data.Engine);
+		
 		if (res != MA_SUCCESS)
 		{
 			m_LastErrorMsg = "Failed to create engine";
@@ -224,18 +231,24 @@ namespace Wave {
 	bool Context::DestroyEngine(ID id)
 	{
 		ma_engine* engine = (ma_engine*)GetEngineInternal(id);
+		
 		if (engine == nullptr)
 		{
 			m_LastErrorMsg = std::format("Failed to destroy engine with ID: '{}'", uint64_t(id));
 			return false;
 		}
+		
 		ma_engine_uninit(engine);
+
+		s_Data->ActiveEngines.erase(id);
+
 		return true;
 	}
 
 	void Context::SetErrorMsg(const std::string& msg)
 	{
 		WAVE_ASSERT(s_Data != nullptr && s_Data->CurrentContext.pCtx != nullptr, "Wave not initialized... No active context%s", "");
+		
 		s_Data->CurrentContext.pCtx->m_LastErrorMsg = msg;
 	}
 
@@ -243,16 +256,40 @@ namespace Wave {
 	{
 		WAVE_ASSERT(s_Data != nullptr, "Wave not initialized!%s", "");
 		WAVE_ASSERT(s_Data->ActiveSounds.contains(id), "Invalid sound ID: '%zu'", uint64_t(id));
+		
 		SoundPair& pair = s_Data->ActiveSounds[id];
+		
 		return (void*)&pair.Data.Sound;
+	}
+
+	SoundData* Context::GetSoundInternalData(ID id)
+	{
+		WAVE_ASSERT(s_Data != nullptr, "Wave not initialized!%s", "");
+		WAVE_ASSERT(s_Data->ActiveSounds.contains(id), "Invalid sound ID: '%zu'", uint64_t(id));
+		
+		SoundPair& pair = s_Data->ActiveSounds[id];
+		
+		return &pair.Data.Data;
 	}
 
 	void* Context::GetEngineInternal(ID id)
 	{
 		WAVE_ASSERT(s_Data != nullptr, "Wave not initialized!%s", "");
 		WAVE_ASSERT(s_Data->ActiveEngines.contains(id), "Invalid engine ID: '%zu'", uint64_t(id));
+		
 		EnginePair& pair = s_Data->ActiveEngines[id];
+		
 		return (void*)&pair.Data.Engine;
+	}
+
+	EngineData* Context::GetEngineInternalData(ID id)
+	{
+		WAVE_ASSERT(s_Data != nullptr, "Wave not initialized!%s", "");
+		WAVE_ASSERT(s_Data->ActiveEngines.contains(id), "Invalid engine ID: '%zu'", uint64_t(id));
+
+		EnginePair& pair = s_Data->ActiveEngines[id];
+		
+		return &pair.Data.Data;
 	}
 
 	std::unique_ptr<Context> CreateContext()
