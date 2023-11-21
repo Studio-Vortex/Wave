@@ -80,7 +80,7 @@ namespace Wave {
 		friend class Engine;
 	};
 
-	std::unique_ptr<Context> CreateContext();
-	void DestroyContext(std::unique_ptr<Context>&& context);
+	std::shared_ptr<Context> CreateContext();
+	void DestroyContext(std::shared_ptr<Context> context);
 
 }

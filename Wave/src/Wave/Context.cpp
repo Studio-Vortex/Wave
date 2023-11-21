@@ -292,14 +292,14 @@ namespace Wave {
 		return &pair.Data.Data;
 	}
 
-	std::unique_ptr<Context> CreateContext()
+	std::shared_ptr<Context> CreateContext()
 	{
 		return std::make_unique<Context>();
 	}
 
-	void DestroyContext(std::unique_ptr<Context>&& context)
+	void DestroyContext(std::shared_ptr<Context> context)
 	{
-		context.reset(nullptr);
+		context.reset();
 	}
 
 }

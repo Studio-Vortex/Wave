@@ -1,6 +1,7 @@
  #pragma once
 
 #include "Wave/Assert.h"
+#include "Wave/PlaybackDevice.h"
 #include "Wave/Context.h"
 #include "Wave/Engine.h"
 #include "Wave/Sound.h"
