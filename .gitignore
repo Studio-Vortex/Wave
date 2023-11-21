@@ -10,5 +10,7 @@ bin/
 *.log
 Makefile
 
+App/Resources/
+
 # Exclude
 !vendor/bin

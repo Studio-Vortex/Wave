@@ -27,18 +27,18 @@ project "Wave"
        defines { }
 
    filter "configurations:Debug"
-       defines { "DEBUG" }
+       defines { "WAVE_DEBUG" }
        runtime "Debug"
        symbols "On"
 
    filter "configurations:Release"
-       defines { "RELEASE" }
+       defines { "WAVE_RELEASE" }
        runtime "Release"
        optimize "On"
        symbols "On"
 
    filter "configurations:Dist"
-       defines { "DIST" }
+       defines { "WAVE_DIST" }
        runtime "Release"
        optimize "On"
        symbols "Off"
