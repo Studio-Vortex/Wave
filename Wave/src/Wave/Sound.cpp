@@ -331,18 +331,8 @@ namespace Wave {
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
-		
-		float length = 0.0f;
-		ma_result res = ma_sound_get_length_in_seconds(sound, &length);
-		
-		if (res != MA_SUCCESS)
-		{
-			std::string err = std::format("Failed to get length of sound with ID: '{}'", uint64_t(m_SoundID));
-			Context::SetErrorMsg(err);
-			return 0.0f;
-		}
 
-		return length;
+		return Context::GetSoundInternalData(m_SoundID)->Length;
 	}
 
 	bool Sound::IsPlaying() const

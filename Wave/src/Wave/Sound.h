@@ -17,6 +17,8 @@ namespace Wave {
 		float MinDistance = 1.0f;
 		float MaxDistance = 1.0f;
 
+		float Length = 0.0f;
+
 		Vec3 Position = Vec3(0.0f);
 		Vec3 Direction = Vec3(0.0f);
 		Vec3 Velocity = Vec3(0.0f);

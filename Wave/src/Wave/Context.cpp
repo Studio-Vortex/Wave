@@ -179,6 +179,14 @@ namespace Wave {
 			return Sound(ID::Invalid);
 		}
 
+		ma_result res = ma_sound_get_length_in_seconds(&pair.Data.Sound, &pair.Data.Data.Length);
+
+		if (res != MA_SUCCESS)
+		{
+			m_LastErrorMsg = std::format("Failed to get length of sound with ID: '{}'", uint64_t(soundID));
+			return Sound(ID::Invalid);
+		}
+
 		return sound;
 	}
 
