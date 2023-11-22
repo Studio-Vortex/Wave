@@ -179,7 +179,7 @@ namespace Wave {
 			return Sound(ID::Invalid);
 		}
 
-		ma_result res = ma_sound_get_length_in_seconds(&pair.Data.Sound, &pair.Data.Data.Length);
+		res = ma_sound_get_length_in_seconds(&pair.Data.Sound, &pair.Data.Data.Length);
 
 		if (res != MA_SUCCESS)
 		{

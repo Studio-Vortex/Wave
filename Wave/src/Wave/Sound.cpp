@@ -32,32 +32,32 @@ namespace Wave {
 
 	bool Sound::Restart() const
 	{
-		bool result = true;
-
-		if (IsPlaying())
+		if (!IsPlaying())
 		{
-			result = SeekToPCMFrame(0);
+			return true;
 		}
+
+		SeekToPCMFrame(0);
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
 		Context::GetSoundInternalData(m_SoundID)->IsPlaying = true;
 
-		return result;
+		return true;
 	}
 
 	bool Sound::Pause() const
 	{
-		bool result = true;
-
-		if (!IsPaused())
+		if (IsPaused())
 		{
-			result = Stop();
+			return true;
 		}
+
+		Stop();
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
 		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
 		
-		return result;
+		return true;
 	}
 
 	bool Sound::Stop() const

@@ -81,6 +81,10 @@ void HighLevelDemo(std::shared_ptr<Wave::Context> ctx, const std::filesystem::pa
 	sound.SetVolume(1.1f);
 
 	getchar();
+	sound.Pause();
+	getchar();
+	sound.Play();
+	getchar();
 
 	// Stop the sound (device.Shutdown() will stop the sound anyway so this is not necessary)
 	device.Stop();
