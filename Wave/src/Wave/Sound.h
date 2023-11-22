@@ -94,6 +94,8 @@ namespace Wave {
 		bool IsSpacialized() const;
 		void SetSpacialized(bool spacialized) const;
 
+		bool SeekToPCMFrame(uint64_t frameIndex) const;
+
 		inline ID GetID() const { return m_SoundID; }
 
 		inline operator ID() const { return m_SoundID; }

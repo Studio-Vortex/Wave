@@ -32,22 +32,17 @@ namespace Wave {
 
 	bool Sound::Restart() const
 	{
-		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
-		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		bool result = true;
 
-		ma_result res = ma_sound_seek_to_pcm_frame(sound, 0);
-
-		if (res != MA_SUCCESS)
+		if (IsPlaying())
 		{
-			std::string err = std::format("Failed to restart sound with ID: '{}'", uint64_t(m_SoundID));
-			Context::SetErrorMsg(err);
-			return false;
+			result = SeekToPCMFrame(0);
 		}
 
-		Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
-		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
+		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
+		Context::GetSoundInternalData(m_SoundID)->IsPlaying = true;
 
-		return true;
+		return result;
 	}
 
 	bool Sound::Pause() const
@@ -383,6 +378,23 @@ namespace Wave {
 
 		ma_sound_set_spatialization_enabled(sound, spacialized);
 		Context::GetSoundInternalData(m_SoundID)->Spacialized = spacialized;
+	}
+
+	bool Sound::SeekToPCMFrame(uint64_t frameIndex) const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_result res = ma_sound_seek_to_pcm_frame(sound, frameIndex);
+
+		if (res != MA_SUCCESS)
+		{
+			std::string err = std::format("Failed to seek to frame '{}' on sound with ID: '{}'", frameIndex, uint64_t(m_SoundID));
+			Context::SetErrorMsg(err);
+			return false;
+		}
+
+		return true;
 	}
 
 }
