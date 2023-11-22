@@ -63,12 +63,9 @@ namespace Wave {
 			return true;
 		}
 
-		if (!m_Engine.IsRunning())
+		if (!m_Engine.IsRunning() && !m_Engine.Start())
 		{
-			if (!m_Engine.Start())
-			{
-				return false;
-			}
+			return false;
 		}
 
 		if (!m_Sound.Play())
@@ -81,16 +78,56 @@ namespace Wave {
 
 	bool PlaybackDevice::Restart() const
 	{
+		if (!m_Sound.IsPlaying())
+		{
+			return true;
+		}
+
+		if (!m_Engine.IsRunning() && !m_Engine.Start())
+		{
+			return false;
+		}
+
+		if (!m_Sound.Restart())
+		{
+			return false;
+		}
+
 		return true;
 	}
 
 	bool PlaybackDevice::Pause() const
 	{
+		if (m_Sound.IsPaused())
+		{
+			return true;
+		}
+
+		if (!m_Sound.Pause())
+		{
+			return false;
+		}
+
 		return true;
 	}
 
 	bool PlaybackDevice::Stop() const
 	{
+		if (!m_Sound.IsPlaying())
+		{
+			return true;
+		}
+
+		if (!m_Sound.Stop())
+		{
+			return false;
+		}
+
+		if (!m_Engine.Stop())
+		{
+			return false;
+		}
+
 		return true;
 	}
 
