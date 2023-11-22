@@ -19,8 +19,8 @@ project "Wave"
       "vendor",
    }
 
-   targetdir ("../bin/" .. OutputDir .. "/%{prj.name}")
-   objdir ("../bin/int/" .. OutputDir .. "/%{prj.name}")
+   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
+   objdir ("../bin/int/" .. outputdir .. "/%{prj.name}")
 
    filter "system:windows"
        systemversion "latest"
