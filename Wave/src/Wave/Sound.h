@@ -26,7 +26,6 @@ namespace Wave {
 		AudioCone Cone;
 		AttenuationModel Model = AttenuationModel::Inverse;
 
-		bool IsPlaying = false;
 		bool IsPaused = false;
 		bool IsLooping = false;
 		bool Spacialized = true;

@@ -25,7 +25,6 @@ namespace Wave {
 		}
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
-		Context::GetSoundInternalData(m_SoundID)->IsPlaying = true;
 		
 		return true;
 	}
@@ -40,7 +39,6 @@ namespace Wave {
 		SeekToPCMFrame(0);
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
-		Context::GetSoundInternalData(m_SoundID)->IsPlaying = true;
 
 		return true;
 	}
@@ -55,7 +53,6 @@ namespace Wave {
 		Stop();
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
-		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
 		
 		return true;
 	}
@@ -75,7 +72,6 @@ namespace Wave {
 		}
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
-		Context::GetSoundInternalData(m_SoundID)->IsPlaying = false;
 		
 		return true;
 	}
@@ -335,7 +331,7 @@ namespace Wave {
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return Context::GetSoundInternalData(m_SoundID)->IsPlaying;
+		return (bool)ma_sound_is_playing(sound);
 	}
 
 	bool Sound::IsPaused() const
