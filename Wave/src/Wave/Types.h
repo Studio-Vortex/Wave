@@ -8,7 +8,23 @@ namespace Wave {
 
 	enum class AttenuationModel : uint8_t
 	{
-		None = 0, Inverse, Linear, Exponential,
+		None = 0,
+		Inverse,
+		Linear,
+		Exponential,
+	};
+
+	/* Stereo panner. */
+	enum class PanMode
+	{
+		Balance = 0, /* Does not blend one side with the other. Technically just a balance. Compatible with other popular audio engines and therefore the default. */
+		Pan,         /* A true pan. The sound from one side will "move" to the other side and blend with it. */
+	};
+
+	enum class Positioning
+	{
+		Absolute = 0,
+		Relative,
 	};
 
 	struct Vec3

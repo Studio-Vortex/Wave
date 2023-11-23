@@ -17,7 +17,15 @@ namespace Wave {
 		float MinDistance = 1.0f;
 		float MaxDistance = 1.0f;
 
-		float Length = 0.0f;
+		float DirectionalAttenuationFactor = 1.0f;
+
+		float Pan = 1.0f;
+		PanMode PanMode = PanMode::Balance;
+
+		Positioning Positioning_ = Positioning::Absolute;
+
+		float LengthInSeconds = 0.0f;
+		uint64_t LengthInPCMFrames = 0;
 
 		Vec3 Position = Vec3(0.0f);
 		Vec3 Direction = Vec3(0.0f);
@@ -51,16 +59,18 @@ namespace Wave {
 		float GetDopplerFactor() const;
 		void SetDopplerFactor(float dopplerFactor) const;
 
-		Vec3 GetPosition() const;
+		const Vec3& GetPosition() const;
 		void SetPosition(const Vec3& position) const;
 
-		Vec3 GetDirection() const;
+		const Vec3& GetDirection() const;
 		void SetDirection(const Vec3& direction) const;
 
-		Vec3 GetVelocity() const;
+		const Vec3& GetVelocity() const;
 		void SetVelocity(const Vec3& velocity) const;
 
-		AudioCone GetAudioCone() const;
+		const Vec3& GetDirectionToListener() const;
+
+		const AudioCone& GetAudioCone() const;
 		void SetAudioCone(const AudioCone& cone) const;
 
 		float GetMinGain() const;
@@ -81,8 +91,45 @@ namespace Wave {
 		AttenuationModel GetAttenuationModel() const;
 		void SetAttenuationModel(AttenuationModel model) const;
 
-		float GetSoundCursor() const;
-		float GetLength() const;
+		float GetDirectionalAttenuationFactor() const;
+		void SetDirectionalAttenuationFactor(float factor) const;
+
+		float GetPan() const;
+		void SetPan(float pan) const;
+
+		PanMode GetPanMode() const;
+		void SetPanMode(PanMode panMode) const;
+
+		Positioning GetPositioning() const;
+		void SetPositioning(Positioning positioning) const;
+
+		uint32_t GetListenerIndex() const;
+		uint32_t GetPinnedListenerIndex() const;
+		void SetPinnedListenerIndex(uint32_t listenerIndex) const;
+
+		float GetCurrentFadeVolume() const;
+		float GetCursorInSeconds() const;
+		uint64_t GetCursorInPCMFrames() const;
+
+		uint64_t GetTimeInMilliseconds() const;
+		uint64_t GetTimeInPCMFrames() const;
+
+		void SetStartTimeInMilliseconds(uint64_t startTimeInMilliseconds);
+		void SetStopTimeInMilliseconds(uint64_t stopTimeInMilliseconds);
+		void SetStopTimeWithFadeInMilliseconds(uint64_t stopTimeInMilliseconds, uint64_t fadeLengthInMilliseconds);
+
+		void SetStartTimeInPCMFrames(uint64_t startTimeInFrames);
+		void SetStopTimeInPCMFrames(uint64_t stopTimeInFrames);
+		void SetStopTimeWithFadeInPCMFrames(uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames);
+
+		void SetFadeInMilliseconds(float volumeStart, float volumeEnd, uint64_t	fadeLengthInMilliseconds);
+		void SetFadeStartInMilliseconds(float volumeStart, float volumeEnd, uint64_t fadeLengthInMilliseconds, uint64_t absoluteGlobalTimeInMilliseconds);
+
+		void SetFadeInPCMFrames(float volumeStart, float volumeEnd, uint64_t fadeLengthInFrames);
+		void SetFadeStartInPCMFrames(float volumeStart, float volumeEnd, uint64_t fadeLengthInFrames, uint64_t absoluteGlobalTimeInFrames);
+
+		float GetLengthInSeconds() const;
+		uint64_t GetLengthInPCMFrames() const;
 
 		bool IsPlaying() const;
 		bool IsPaused() const;

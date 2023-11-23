@@ -14,9 +14,9 @@ namespace Wave {
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
-		
+
 		ma_result res = ma_sound_start(sound);
-		
+
 		if (res != MA_SUCCESS)
 		{
 			std::string err = std::format("Failed to start sound with ID: '{}'", uint64_t(m_SoundID));
@@ -25,7 +25,7 @@ namespace Wave {
 		}
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
-		
+
 		return true;
 	}
 
@@ -50,7 +50,17 @@ namespace Wave {
 			return true;
 		}
 
-		Stop();
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_result res = ma_sound_stop(sound);
+
+		if (res != MA_SUCCESS)
+		{
+			std::string err = std::format("Failed to stop sound with ID: '{}'", uint64_t(m_SoundID));
+			Context::SetErrorMsg(err);
+			return false;
+		}
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = true;
 		
@@ -70,6 +80,8 @@ namespace Wave {
 			Context::SetErrorMsg(err);
 			return false;
 		}
+
+		SeekToPCMFrame(0);
 
 		Context::GetSoundInternalData(m_SoundID)->IsPaused = false;
 		
@@ -127,7 +139,7 @@ namespace Wave {
 		Context::GetSoundInternalData(m_SoundID)->DopplerFactor = dopplerFactor;
 	}
 
-	Vec3 Sound::GetPosition() const
+	const Vec3& Sound::GetPosition() const
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
@@ -144,7 +156,7 @@ namespace Wave {
 		Context::GetSoundInternalData(m_SoundID)->Position = position;
 	}
 
-	Vec3 Sound::GetDirection() const
+	const Vec3& Sound::GetDirection() const
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
@@ -161,7 +173,7 @@ namespace Wave {
 		Context::GetSoundInternalData(m_SoundID)->Direction = direction;
 	}
 
-	Vec3 Sound::GetVelocity() const
+	const Vec3& Sound::GetVelocity() const
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
@@ -178,7 +190,16 @@ namespace Wave {
 		Context::GetSoundInternalData(m_SoundID)->Velocity = velocity;
 	}
 
-	AudioCone Sound::GetAudioCone() const
+	const Vec3& Sound::GetDirectionToListener() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_vec3f dir = ma_sound_get_direction_to_listener(sound);
+		return Vec3(dir.x, dir.y, dir.z);
+	}
+
+	const AudioCone& Sound::GetAudioCone() const
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
@@ -300,7 +321,107 @@ namespace Wave {
 		Context::GetSoundInternalData(m_SoundID)->Model = model;
 	}
 
-	float Sound::GetSoundCursor() const
+	float Sound::GetDirectionalAttenuationFactor() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		return Context::GetSoundInternalData(m_SoundID)->DirectionalAttenuationFactor;
+	}
+
+	void Sound::SetDirectionalAttenuationFactor(float factor) const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_sound_set_directional_attenuation_factor(sound, factor);
+		Context::GetSoundInternalData(m_SoundID)->MaxDistance = factor;
+	}
+
+	float Sound::GetPan() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		return Context::GetSoundInternalData(m_SoundID)->Pan;
+	}
+
+	void Sound::SetPan(float pan) const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_pan(sound, pan);
+		Context::GetSoundInternalData(m_SoundID)->Pan = pan;
+	}
+
+	PanMode Sound::GetPanMode() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		return Context::GetSoundInternalData(m_SoundID)->PanMode;
+	}
+
+	void Sound::SetPanMode(PanMode panMode) const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_sound_set_pan_mode(sound, (ma_pan_mode)panMode);
+		Context::GetSoundInternalData(m_SoundID)->PanMode = panMode;
+	}
+
+	Positioning Sound::GetPositioning() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		return Context::GetSoundInternalData(m_SoundID)->Positioning_;
+	}
+
+	void Sound::SetPositioning(Positioning positioning) const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_sound_set_positioning(sound, (ma_positioning)positioning);
+		Context::GetSoundInternalData(m_SoundID)->Positioning_ = positioning;
+	}
+
+	uint32_t Sound::GetListenerIndex() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		return (uint32_t)ma_sound_get_listener_index(sound);
+	}
+
+	uint32_t Sound::GetPinnedListenerIndex() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		return (uint32_t)ma_sound_get_pinned_listener_index(sound);
+	}
+
+	void Sound::SetPinnedListenerIndex(uint32_t listenerIndex) const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_sound_set_pinned_listener_index(sound, listenerIndex);
+	}
+
+	float Sound::GetCurrentFadeVolume() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		return ma_sound_get_current_fade_volume(sound);
+	}
+
+	float Sound::GetCursorInSeconds() const
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
@@ -318,12 +439,134 @@ namespace Wave {
 		return cursor;
 	}
 
-	float Sound::GetLength() const
+	uint64_t Sound::GetCursorInPCMFrames() const
 	{
 		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
 		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
 
-		return Context::GetSoundInternalData(m_SoundID)->Length;
+		uint64_t cursor = 0;
+		ma_result res = ma_sound_get_cursor_in_pcm_frames(sound, &cursor);
+
+		if (res != MA_SUCCESS)
+		{
+			std::string err = std::format("Failed to get cursor of sound with ID: '{}'", uint64_t(m_SoundID));
+			Context::SetErrorMsg(err);
+			return 0;
+		}
+
+		return cursor;
+	}
+
+	uint64_t Sound::GetTimeInMilliseconds() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		return ma_sound_get_time_in_milliseconds(sound);
+	}
+
+	uint64_t Sound::GetTimeInPCMFrames() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		return ma_sound_get_time_in_pcm_frames(sound);
+	}
+
+	void Sound::SetStartTimeInMilliseconds(uint64_t startTimeInMilliseconds)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_start_time_in_milliseconds(sound, startTimeInMilliseconds);
+	}
+
+	void Sound::SetStopTimeInMilliseconds(uint64_t stopTimeInMilliseconds)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_stop_time_in_milliseconds(sound, stopTimeInMilliseconds);
+	}
+
+	void Sound::SetStopTimeWithFadeInMilliseconds(uint64_t stopTimeInMilliseconds, uint64_t fadeLengthInMilliseconds)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_stop_time_with_fade_in_milliseconds(sound, stopTimeInMilliseconds, fadeLengthInMilliseconds);
+	}
+
+	void Sound::SetStartTimeInPCMFrames(uint64_t startTimeInFrames)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_start_time_in_pcm_frames(sound, startTimeInFrames);
+	}
+
+	void Sound::SetStopTimeInPCMFrames(uint64_t stopTimeInFrames)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_stop_time_in_pcm_frames(sound, stopTimeInFrames);
+	}
+
+	void Sound::SetStopTimeWithFadeInPCMFrames(uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_stop_time_with_fade_in_pcm_frames(sound, stopTimeInFrames, fadeLengthInFrames);
+	}
+
+	void Sound::SetFadeInMilliseconds(float volumeStart, float volumeEnd, uint64_t fadeLengthInMilliseconds)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_fade_in_milliseconds(sound, volumeStart, volumeEnd, fadeLengthInMilliseconds);
+	}
+
+	void Sound::SetFadeStartInMilliseconds(float volumeStart, float volumeEnd, uint64_t fadeLengthInMilliseconds, uint64_t absoluteGlobalTimeInMilliseconds)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_sound_set_fade_start_in_milliseconds(sound, volumeStart, volumeEnd, fadeLengthInMilliseconds, absoluteGlobalTimeInMilliseconds);
+	}
+
+	void Sound::SetFadeInPCMFrames(float volumeStart, float volumeEnd, uint64_t fadeLengthInFrames)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		ma_sound_set_fade_in_pcm_frames(sound, volumeStart, volumeEnd, fadeLengthInFrames);
+	}
+
+	void Sound::SetFadeStartInPCMFrames(float volumeStart, float volumeEnd, uint64_t fadeLengthInFrames, uint64_t absoluteGlobalTimeInFrames)
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		ma_sound_set_fade_start_in_pcm_frames(sound, volumeStart, volumeEnd, fadeLengthInFrames, absoluteGlobalTimeInFrames);
+	}
+
+	float Sound::GetLengthInSeconds() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+
+		return Context::GetSoundInternalData(m_SoundID)->LengthInSeconds;
+	}
+
+	uint64_t Sound::GetLengthInPCMFrames() const
+	{
+		ma_sound* sound = (ma_sound*)Context::GetSoundInternal(m_SoundID);
+		WAVE_ASSERT(sound, "Invalid sound ID: '%zu'", uint64_t(m_SoundID));
+		
+		return Context::GetSoundInternalData(m_SoundID)->LengthInSeconds;
 	}
 
 	bool Sound::IsPlaying() const
