@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Wave/Sound.h"
 #include "Wave/Engine.h"
+#include "Wave/Sound.h"
+#include "Wave/SoundGroup.h"
 #include "Wave/ID.h"
 
 #include <memory>
@@ -59,6 +60,9 @@ namespace Wave {
 		Sound CreateSoundFromDataSource(ID engineID, const uint8_t* src, size_t size);
 		bool DestroySound(ID id);
 
+		SoundGroup CreateSoundGroup(ID engineID, ID parentGroupID = ID::Invalid);
+		bool DestroySoundGroup(ID id);
+
 		Engine CreateEngine();
 		bool DestroyEngine(ID id);
 
@@ -69,6 +73,8 @@ namespace Wave {
 
 		static void* GetSoundInternal(ID id);
 		static SoundData* GetSoundInternalData(ID id);
+		static void* GetSoundGroupInternal(ID id);
+		static SoundGroupData* GetSoundGroupInternalData(ID id);
 		static void* GetEngineInternal(ID id);
 		static EngineData* GetEngineInternalData(ID id);
 
@@ -76,8 +82,9 @@ namespace Wave {
 		std::string m_LastErrorMsg = "";
 
 	private:
-		friend class Sound;
 		friend class Engine;
+		friend class Sound;
+		friend class SoundGroup;
 	};
 
 	std::shared_ptr<Context> CreateContext();

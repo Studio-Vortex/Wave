@@ -26,6 +26,12 @@ namespace Wave {
 		SoundData Data;
 	};
 
+	struct SoundGroupInternalData
+	{
+		ma_sound_group Group;
+		SoundGroupData Data;
+	};
+
 	struct EngineInternalData
 	{
 		ma_engine Engine;
@@ -44,6 +50,12 @@ namespace Wave {
 		SoundInternalData Data;
 	};
 
+	struct SoundGroupPair
+	{
+		SoundGroup* pSoundGroup;
+		SoundGroupInternalData Data;
+	};
+
 	struct EnginePair
 	{
 		Engine* pEngine;
@@ -52,13 +64,14 @@ namespace Wave {
 
 	struct InternalData
 	{
-		ContextPair CurrentContext;
 		std::unordered_map<ID, SoundPair> ActiveSounds;
+		std::unordered_map<ID, SoundGroupPair> ActiveSoundGroups;
 		std::unordered_map<ID, EnginePair> ActiveEngines;
+
+		ContextPair CurrentContext;
 	};
 
 	static InternalData* s_Data = nullptr;
-	static uint64_t s_ContextCount = 0;
 
 	ContextResult Context::Init(const ContextSettings& settings)
 	{
@@ -170,6 +183,7 @@ namespace Wave {
 		std::string filepath = path.string();
 		config.pFilePath = filepath.c_str();
 
+		WAVE_ASSERT(s_Data->ActiveEngines.contains(engineID), "Invalid Engine ID: '%zu'", uint64_t(engineID));
 		ma_engine* engine = &s_Data->ActiveEngines[engineID].Data.Engine;
 		ma_result res = ma_sound_init_ex(engine, &config, &pair.Data.Sound);
 		
@@ -179,11 +193,19 @@ namespace Wave {
 			return Sound(ID::Invalid);
 		}
 
-		res = ma_sound_get_length_in_seconds(&pair.Data.Sound, &pair.Data.Data.Length);
+		res = ma_sound_get_length_in_seconds(&pair.Data.Sound, &pair.Data.Data.LengthInSeconds);
 
 		if (res != MA_SUCCESS)
 		{
-			m_LastErrorMsg = std::format("Failed to get length of sound with ID: '{}'", uint64_t(soundID));
+			m_LastErrorMsg = std::format("Failed to get length of sound in seconds with ID: '{}'", uint64_t(soundID));
+			return Sound(ID::Invalid);
+		}
+
+		res = ma_sound_get_length_in_pcm_frames(&pair.Data.Sound, &pair.Data.Data.LengthInPCMFrames);
+
+		if (res != MA_SUCCESS)
+		{
+			m_LastErrorMsg = std::format("Failed to get length of sound in pcm frames with ID: '{}'", uint64_t(soundID));
 			return Sound(ID::Invalid);
 		}
 
@@ -212,6 +234,56 @@ namespace Wave {
 
 		return true;
 	}
+
+    SoundGroup Context::CreateSoundGroup(ID engineID, ID parentGroupID)
+    {
+		ID soundGroupID = ID(s_Data->ActiveSoundGroups.size());
+		SoundGroup soundGroup(soundGroupID, parentGroupID);
+
+		WAVE_ASSERT(!s_Data->ActiveSoundGroups.contains(soundGroupID), "Sound Group with ID: '%zu' already exists!", uint64_t(soundGroupID));
+		SoundGroupPair& pair = s_Data->ActiveSoundGroups[soundGroupID];
+		pair.pSoundGroup = &soundGroup;
+
+		ma_sound_group_config config = ma_sound_group_config_init();
+
+		WAVE_ASSERT(s_Data->ActiveEngines.contains(engineID), "Invalid Engine ID: '%zu'", uint64_t(engineID));
+		ma_engine* engine = &s_Data->ActiveEngines[engineID].Data.Engine;
+
+		ma_sound_group* parentGroup = nullptr;
+
+		if (parentGroupID != ID::Invalid)
+		{
+			WAVE_ASSERT(s_Data->ActiveSoundGroups.contains(parentGroupID), "Invalid Sound Group ID: '%zu'", uint64_t(parentGroupID));
+			parentGroup = &s_Data->ActiveSoundGroups[parentGroupID].Data.Group;
+		}
+
+		ma_result res = ma_sound_group_init(engine, 0, parentGroup, &pair.Data.Group);
+
+		if (res != MA_SUCCESS)
+		{
+			m_LastErrorMsg = "Failed to create sound group";
+			return SoundGroup(ID::Invalid);
+		}
+
+        return soundGroup;
+    }
+
+    bool Context::DestroySoundGroup(ID id)
+    {
+		ma_sound_group* soundGroup = (ma_sound_group*)GetSoundGroupInternal(id);
+
+		if (soundGroup == nullptr)
+		{
+			m_LastErrorMsg = std::format("Failed to destroy sound group with ID: '{}'", uint64_t(id));
+			return false;
+		}
+
+		ma_sound_group_uninit(soundGroup);
+
+		s_Data->ActiveSoundGroups.erase(id);
+
+		return true;
+    }
 
 	Engine Context::CreateEngine()
 	{
@@ -277,6 +349,26 @@ namespace Wave {
 		
 		SoundPair& pair = s_Data->ActiveSounds[id];
 		
+		return &pair.Data.Data;
+	}
+
+	void* Context::GetSoundGroupInternal(ID id)
+	{
+		WAVE_ASSERT(s_Data != nullptr, "Wave not initialized!%s", "");
+		WAVE_ASSERT(s_Data->ActiveSoundGroups.contains(id), "Invalid Sound Group ID: '%zu'", uint64_t(id));
+
+		SoundGroupPair& pair = s_Data->ActiveSoundGroups[id];
+
+		return (void*)&pair.Data.Group;
+	}
+
+	SoundGroupData* Context::GetSoundGroupInternalData(ID id)
+	{
+		WAVE_ASSERT(s_Data != nullptr, "Wave not initialized!%s", "");
+		WAVE_ASSERT(s_Data->ActiveSoundGroups.contains(id), "Invalid Sound Group ID: '%zu'", uint64_t(id));
+
+		SoundGroupPair& pair = s_Data->ActiveSoundGroups[id];
+
 		return &pair.Data.Data;
 	}
 
